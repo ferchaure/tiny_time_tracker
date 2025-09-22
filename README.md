@@ -54,5 +54,6 @@ go build -o tiny_time_tracker
 
 The following features are planned for future releases:
 
-- ✏️ **Last Interval Editor**: Ability to edit the start/end times of the most recent session
-- 📁 **CSV File**: Save/Load time tracking history to a CSV file. 
+- **Last Interval Editor**: Ability to edit the start/end times of the most recent session
+- **Edit mode File**: Edit las time interval
+- **CSV File**: Handle broken rows. 
