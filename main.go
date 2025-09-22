@@ -12,6 +12,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+type TUIState int
+
+const (
+	RunningState TUIState = iota
+	WaitingState
+	EditingState
+)
+
 type model struct {
 	keymap        keymap
 	help          help.Model
@@ -22,6 +30,7 @@ type model struct {
 	history       string
 	tab           uint
 	running       bool
+	state         TUIState
 	quitting      bool
 }
 
@@ -49,8 +58,6 @@ type keymap struct {
 }
 
 func (m model) Init() tea.Cmd {
-	m.running = false
-	m.history = GetHistory()
 	return nil
 }
 
@@ -80,9 +87,9 @@ func (m model) View() string {
 		main_view += "▶"
 		//current timer:
 		main_view += "\n\n--Last interval-- \nFrom: "
-		main_view += m.laststartTime.Format("15:04:05 2006/01/02")
+		main_view += m.laststartTime.Format(layout)
 		main_view += "\nTo: "
-		main_view += m.lastendTime.Format("15:04:05 2006/01/02")
+		main_view += m.lastendTime.Format(layout)
 	}
 
 	s += lipgloss.JoinHorizontal(lipgloss.Top,
@@ -115,6 +122,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.keymap.stop.SetEnabled(!m.running)
 			m.keymap.start.SetEnabled(m.running)
 			m.startTime = time.Now()
+			AddStartToCSV(Filename, m.startTime)
 			m.running = true
 			return m, m.spinner.Tick
 		case key.Matches(msg, m.keymap.tab):
@@ -125,6 +133,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.keymap.start.SetEnabled(m.running)
 			m.laststartTime = m.startTime
 			m.lastendTime = time.Now()
+			AddEndToCSV(Filename, m.lastendTime)
 			m.running = false
 			return m, nil
 		}
@@ -141,6 +150,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	return m, nil
 }
+
+var Filename string
+
+const layout = "15:04:05 2006/01/02"
+
 func main() {
 	m := model{
 		spinner: spinner.New(spinner.WithSpinner(spinner.Dot)),
@@ -172,6 +186,7 @@ func main() {
 	m.running = false
 	m.history = GetHistory()
 	m.keymap.tab.SetEnabled(false)
+	Filename = "test.csv"
 	if _, err := tea.NewProgram(m, tea.WithMouseAllMotion()).Run(); err != nil {
 		fmt.Println("Oh no, it didn't work:", err)
 		os.Exit(1)
