@@ -36,17 +36,17 @@ type model struct {
 var (
 	modelStyle = lipgloss.NewStyle().
 			Width(30).
-			Height(6).
+			Height(7).
 			Align(lipgloss.Center, lipgloss.Center).
 			BorderStyle(lipgloss.HiddenBorder())
 	runningStyle = lipgloss.NewStyle().
 			Width(30).
-			Height(6).
+			Height(7).
 			Align(lipgloss.Center, lipgloss.Center).
 			BorderStyle(lipgloss.HiddenBorder()).Background(lipgloss.Color("#5b2599"))
 	historyModelStyle = lipgloss.NewStyle().
 				Width(15).
-				Height(6).
+				Height(7).
 				Align(lipgloss.Left, lipgloss.Center).
 				BorderStyle(lipgloss.NormalBorder()).
 				BorderForeground(lipgloss.Color("69"))
@@ -89,7 +89,6 @@ func (m model) View() string {
 		main_view += fmt.Sprintf("\n%02d:%02d:%02d", h, minutes, seconds%60)
 		main_view += "\n\n--Current interval-- \nFrom: "
 		main_view += m.startTime.Format("15:04:05 2006/01/02")
-		main_view += "\n"
 	} else {
 		main_view += "▶"
 		//current timer:
@@ -97,7 +96,6 @@ func (m model) View() string {
 		main_view += m.laststartTime.Format(layout)
 		main_view += "\nTo: "
 		main_view += m.lastendTime.Format(layout)
-		main_view += "\n"
 	}
 
 	var style lipgloss.Style
@@ -132,6 +130,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch {
 		case key.Matches(msg, m.keymap.quit):
 			m.quitting = true
+			if m.state == RunningState {
+				AddEndToCSV(Filename, time.Now())
+			}
 			return m, tea.Quit
 		case key.Matches(msg, m.keymap.start):
 			m.keymap.stop.SetEnabled(true)
@@ -198,7 +199,7 @@ func main() {
 		},
 		help: help.New(),
 	}
-	m.spinner.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#2E2AEB"))
+	m.spinner.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
 	m.state = WaitingState
 	Filename = "test.csv"
 	m.history = GetHistory()
