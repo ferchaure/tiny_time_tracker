@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"time"
+
+	"syscall"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
@@ -13,6 +16,8 @@ import (
 )
 
 type TUIState int
+
+type sigMsg syscall.Signal
 
 const (
 	RunningState TUIState = iota
@@ -154,8 +159,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.history = GetHistory()
 			return m, nil
 		}
-
 	}
+
+	switch msg := msg.(type) {
+	case sigMsg:
+		if m.state == RunningState {
+
+			if m.state == RunningState {
+				AddEndToCSV(Filename, time.Now())
+			}
+		}
+		return m, tea.Quit
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c":
+			if m.state == RunningState {
+				AddEndToCSV(Filename, time.Now())
+			}
+			return m, tea.Quit
+		}
+	}
+
 	if m.state == RunningState {
 		switch msg := msg.(type) {
 		case spinner.TickMsg:
@@ -204,7 +229,15 @@ func main() {
 	Filename = "test.csv"
 	m.history = GetHistory()
 	m.keymap.tab.SetEnabled(false)
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
+	p := tea.NewProgram(m, tea.WithoutSignalHandler(), tea.WithAltScreen())
+	go func() {
+		sig := <-sigs
+		p.Send(sigMsg(sig.(syscall.Signal)))
+	}()
+
+	if _, err := p.Run(); err != nil {
 		fmt.Println("Oh no, it didn't work:", err)
 		os.Exit(1)
 	}
