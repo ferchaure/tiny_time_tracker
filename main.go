@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -198,6 +199,10 @@ var Filename string
 const layout = "15:04:05 2006/01/02"
 
 func main() {
+	// parse CLI flags
+	f := flag.String("f", "data.csv", "CSV filename to read/write")
+	flag.Parse()
+	Filename = *f
 	m := model{
 		spinner: spinner.New(spinner.WithSpinner(spinner.Dot)),
 		keymap: keymap{
@@ -226,7 +231,6 @@ func main() {
 	}
 	m.spinner.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF"))
 	m.state = WaitingState
-	Filename = "test.csv"
 	m.history = GetHistory()
 	m.keymap.tab.SetEnabled(false)
 	sigs := make(chan os.Signal, 1)

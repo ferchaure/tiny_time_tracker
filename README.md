@@ -29,10 +29,14 @@ go build -o tiny_time_tracker
 
 3. Run the application:
 ```bash
-./tiny_time_tracker
+./tiny_time_tracker -f data.csv
 ```
 
 ## Usage
+### Arguments
+
+- `-f <file>`: CSV filename to read/write. Defaults to `data.csv`.
+
 
 ### Keyboard Shortcuts
 
@@ -56,4 +60,3 @@ The following features are planned for future releases:
 
 - **Last Interval Editor**: Ability to edit the start/end times of the most recent session
 - **Edit mode File**: Edit las time interval
-- **CSV File**: Handle broken rows. 
