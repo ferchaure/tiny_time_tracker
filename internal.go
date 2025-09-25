@@ -21,7 +21,11 @@ func LoadHistort(filename string) (Today string, ThisWeek string, LastWeek strin
 	LastWeek = "00:00"
 
 	file, err := os.Open(filename)
+
 	if err != nil {
+		if os.IsNotExist(err) {
+			return Today, ThisWeek, LastWeek, nil
+		}
 		return Today, ThisWeek, LastWeek, err
 	}
 	defer file.Close()
