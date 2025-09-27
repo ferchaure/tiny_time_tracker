@@ -72,7 +72,7 @@ func (m model) Init() tea.Cmd {
 }
 
 func GetHistory() string {
-	today, thisWeek, lastWeek, err := LoadHistort(Filename)
+	today, thisWeek, lastWeek, err := LoadHistort(Filename, DayRef)
 	if err != nil {
 		fmt.Println(err)
 		return historyModelStyle.Render("Today: --\nThis Week: --\nLast Week: --")
@@ -195,14 +195,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 var Filename string
+var DayRef int
 
 const layout = "15:04:05 2006/01/02"
 
 func main() {
 	// parse CLI flags
 	f := flag.String("f", "data.csv", "CSV filename to read/write")
+	dayRef := flag.Int("wd", 1, "Weekday: Sunday=0 ... Saturday=6")
+
 	flag.Parse()
 	Filename = *f
+	DayRef = *dayRef
 	m := model{
 		spinner: spinner.New(spinner.WithSpinner(spinner.Dot)),
 		keymap: keymap{

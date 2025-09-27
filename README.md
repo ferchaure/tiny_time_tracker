@@ -36,6 +36,7 @@ go build -o tiny_time_tracker
 ### Arguments
 
 - `-f <file>`: CSV filename to read/write. Defaults to `data.csv`.
+- `-wd <weekday>`: Weekday to start the week (Sunday=0, Monday=1, ..., Saturday=6). Defaults to `1` (Monday).
 
 
 ### Keyboard Shortcuts
@@ -58,5 +59,4 @@ go build -o tiny_time_tracker
 
 The following features are planned for future releases:
 
-- **Last Interval Editor**: Ability to edit the start/end times of the most recent session
-- **Edit mode File**: Edit las time interval
+- **Last Interval Editor**: Ability to edit the start/end times of the most recent session, using a *Edit mode**

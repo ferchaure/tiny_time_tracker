@@ -15,7 +15,7 @@ func formatHM(d time.Duration) string {
 	return fmt.Sprintf("%02d:%02d", hours, minutes)
 }
 
-func LoadHistort(filename string) (Today string, ThisWeek string, LastWeek string, err error) {
+func LoadHistort(filename string, dayRef int) (Today string, ThisWeek string, LastWeek string, err error) {
 	Today = "00:00"
 	ThisWeek = "00:00"
 	LastWeek = "00:00"
@@ -47,9 +47,10 @@ func LoadHistort(filename string) (Today string, ThisWeek string, LastWeek strin
 
 	// Start of current week (Monday)
 	weekday := int(todayStart.Weekday())
-	// Go's Weekday: Sunday=0 ... Saturday=6. We want Monday=0.
-	daysSinceMonday := (weekday + 6) % 7
-	thisWeekStart := todayStart.AddDate(0, 0, -daysSinceMonday)
+	// Go's Weekday: Sunday=0 ... Saturday=6
+	daysSinceRef := (weekday + 7 - dayRef) % 7
+
+	thisWeekStart := todayStart.AddDate(0, 0, -daysSinceRef)
 	thisWeekEnd := thisWeekStart.AddDate(0, 0, 7)
 	lastWeekStart := thisWeekStart.AddDate(0, 0, -7)
 
