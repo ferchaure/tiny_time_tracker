@@ -146,3 +146,90 @@ func AddEndToCSV(filename string, end time.Time) error {
 
 	return nil
 }
+
+func GetLastTime(filename string) (string, string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", "", fmt.Errorf("file does not exist")
+		}
+		return "", "", fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	// Read all records
+	records, err := reader.ReadAll()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to read CSV: %w", err)
+	}
+
+	// If no data records (only header), return zero time
+	if len(records) <= 1 {
+		return "", "", fmt.Errorf("no time entries found")
+	}
+
+	// Get the last record
+	lastRecord := records[len(records)-1]
+	if len(lastRecord) < 2 {
+		return "", "", fmt.Errorf("incomplete last record")
+	}
+
+	startStr := lastRecord[0]
+	endStr := lastRecord[1]
+
+	return startStr, endStr, nil
+}
+
+func ReplaceLastRecord(filename string, startStr, endStr string) error {
+	// Parse the input strings to validate them
+	loc := time.Now().Location()
+	_, err := time.ParseInLocation(layout, startStr, loc)
+	if err != nil {
+		return fmt.Errorf("failed to parse start time: %w", err)
+	}
+	_, err = time.ParseInLocation(layout, endStr, loc)
+	if err != nil {
+		return fmt.Errorf("failed to parse end time: %w", err)
+	}
+
+	// Read all records
+	file, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		return fmt.Errorf("failed to read CSV: %w", err)
+	}
+
+	// Check if we have any data records
+	if len(records) <= 1 {
+		return fmt.Errorf("no time entries found to replace")
+	}
+
+	// Replace the last record
+	records[len(records)-1] = []string{startStr, endStr}
+
+	// Write back to file
+	file, err = os.Create(filename)
+	if err != nil {
+		return fmt.Errorf("failed to create file: %w", err)
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	for _, record := range records {
+		if err := writer.Write(record); err != nil {
+			return fmt.Errorf("failed to write record: %w", err)
+		}
+	}
+
+	return nil
+}
