@@ -7,6 +7,7 @@ A small Terminal User Interface (TUI) application for tracking time and reportin
 - ⏱️ **Simple Time Tracking**: Start and stop timers with a single keypress
 - 📊 **Weekly Reports**: View time tracking data organized by weeks
 - 📝 **Last Interval Display**: See details of your most recent time session
+- ✏️ **Edit Mode**: Modify the start and end times of your last completed interval
 
 ## Installation
 
@@ -44,8 +45,8 @@ go build -o tiny_time_tracker
 | Key | Action |
 |-----|--------|
 | `Space` | Start/Stop timer |
-| `e` | Edit last interval (planned feature) |
-| `Tab` | Switch between tabs (planned feature) |
+| `e` | Edit last interval / Accept edit |
+| `Tab` | Switch between input fields (in edit mode) |
 | `q` or `Ctrl+C` | Quit application |
 
 ### How to Use
@@ -54,9 +55,7 @@ go build -o tiny_time_tracker
 2. **Stop Tracking**: Press `Space` again to end the current session
 3. **View History**: The left panel shows your time tracking history
 4. **Check Last Session**: When not running, the right panel displays details of your last completed session
-
-## Planned Features
-
-The following features are planned for future releases:
-
-- **Last Interval Editor**: Ability to edit the start/end times of the most recent session, using a *Edit mode**
+5. **Edit Last Interval**: Press `e` to edit the start and end times of your last completed session
+   - Use `Tab` to switch between the "From" and "End" input fields
+   - Enter times in the format: `15:04:05 2006/01/02` (HH:MM:SS YYYY/MM/DD)
+   - Press `e` again to accept your changes

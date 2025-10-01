@@ -24,13 +24,12 @@ func newTextarea() textarea.Model {
 	t := textarea.New()
 	t.Prompt = ""
 	t.Placeholder = ""
-	t.ShowLineNumbers = true
+	t.ShowLineNumbers = false
 	t.Cursor.Style = cursorStyle
 	t.FocusedStyle.CursorLine = cursorLineStyle
 	t.FocusedStyle.Base = focusedBorderStyle
 	t.BlurredStyle.Base = blurredBorderStyle
 	t.KeyMap.DeleteWordBackward.SetEnabled(false)
 	t.Blur()
-	//t.SetValue(s)
 	return t
 }

@@ -35,11 +35,9 @@ type model struct {
 	laststartTime time.Time
 	lastendTime   time.Time
 	history       string
-	tab           uint
+	errorMsg      string
 	state         TUIState
 	quitting      bool
-	width         int
-	height        int
 	inputs        [2]textarea.Model
 	focus         int
 }
@@ -61,7 +59,8 @@ var (
 				Align(lipgloss.Left, lipgloss.Center).
 				BorderStyle(lipgloss.NormalBorder()).
 				BorderForeground(lipgloss.Color("69"))
-	helpStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	helpStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	errorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFFFF")).Background(lipgloss.Color("#FF0000"))
 )
 
 type keymap struct {
@@ -124,14 +123,17 @@ func (m model) View() string {
 	} else {
 
 		var views []string
+		inputLabels := [2]string{"From", "End"}
 		for i := range m.inputs {
-			views = append(views, m.inputs[i].View())
+			views = append(views, lipgloss.JoinVertical(lipgloss.Center, inputLabels[i], m.inputs[i].View()))
 		}
-
 		s = lipgloss.JoinHorizontal(lipgloss.Top, views...)
 
 	}
 	s += helpStyle.Render("\n" + m.helpView())
+	if m.errorMsg != "" {
+		s += "\n" + errorStyle.Render(m.errorMsg)
+	}
 	return s
 }
 
@@ -175,11 +177,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, m.keymap.quit):
 				return m, tea.Quit
 			case key.Matches(msg, m.keymap.accept_edit):
+
+				start := m.inputs[0].Value()
+				end := m.inputs[1].Value()
+
+				err := ReplaceLastRecord(Filename, start, end)
+				if err != nil {
+					m.errorMsg = "format error"
+					return m, nil
+				} else {
+					m.errorMsg = ""
+
+				}
 				m.state = WaitingState
 				m.keymap.start.SetEnabled(true)
 				m.keymap.edit.SetEnabled(true)
 				m.keymap.accept_edit.SetEnabled(false)
-				return m, tea.Quit
+				m.history = GetHistory()
+				return m, nil
 			case key.Matches(msg, m.keymap.tab):
 				m.inputs[m.focus].Blur()
 				m.focus++
@@ -210,6 +225,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, tea.Quit
 			case key.Matches(msg, m.keymap.edit):
+				start, end, err := GetLastTime(Filename)
+				if err != nil {
+					return m, nil
+				}
+				m.inputs[0].SetValue(start)
+				m.inputs[1].SetValue(end)
 				m.state = EditingState
 				m.keymap.stop.SetEnabled(false)
 				m.keymap.start.SetEnabled(false)
